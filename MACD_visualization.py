@@ -80,6 +80,6 @@ def read_data(filename):
 
 if __name__ == '__main__':
     n = 1000
-    time, samples = read_data('cocacola.csv')
+    time, samples = read_data('MACD_cocacola.csv')
     macd = Macd(n, samples)
     Visualization.diagram_macd(Visualization(), time[35::], macd.get_macd(35), macd.get_signal())
