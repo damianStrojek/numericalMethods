@@ -112,7 +112,7 @@ for i = 1:5
     k = 1;
     tic
     while norm(res) >= warunek
-        if N(i) == 500
+        if N(i) == 1000
             normres(k) = norm(res);
             k = k + 1;
         end
@@ -180,7 +180,7 @@ for i = 1:5
     k = 1;
     tic
     while norm(res) >= warunek
-        if N(i) == 500
+        if N(i) == 1000
             normres(k) = norm(res);
             k = k + 1;
         end
@@ -212,6 +212,62 @@ xlabel("Ilość iteracji");
 ylabel("Norma residuum");
 saveas(gcf, "zadF_184407_3.png");
 
+%------------------
+% Zadanie G
+%------------------
 
+clc
+clear all
+close all
+load("Dane_Filtr_Dielektryczny_lab3_MN.mat");
+r = M \ b;
+
+save zadG_184407_B r
+
+D = diag(diag(M));
+U = triu(M, 1);
+L = tril(M, -1);
+
+first = (-D)^(-1) * (L + U);
+second = D^(-1) * b;
+
+iterationsG1(1) = 0;
+iterationsG1(2) = 2;
+res = 1;
+warunek = 10^(-14);
+
+while norm(res) >= warunek
+    r = first * r + second;
+    res = M * r - b;
+    iterationsG1(1) = iterationsG1(1) + 1;
+    if isnan(norm(res))
+        break
+    end
+end
+
+if isnan(norm(res)) == false
+    save zadG_184407_J r
+end
+
+%-----------------
+
+first = -(D + L)^(-1);
+second = (D + L)^(-1) * b; 
+
+res = 1;
+k = 1;
+
+while norm(res) >= warunek
+    r = first * (U*r) + second;
+    res = M * r - b;
+    iterationsG1(2) = iterationsG1(2) + 1;
+    if isnan(norm(res))
+        break
+    end
+end
+
+if isnan(norm(res)) == false
+    save zadG_184407_GS r
+end
 
 
