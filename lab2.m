@@ -227,14 +227,15 @@ save zadG_184407_B r
 D = diag(diag(M));
 U = triu(M, 1);
 L = tril(M, -1);
+iterationsG1(1) = 0;
+iterationsG1(2) = 2;
+warunek = 10^(-14);
 
 first = (-D)^(-1) * (L + U);
 second = D^(-1) * b;
 
-iterationsG1(1) = 0;
-iterationsG1(2) = 2;
 res = 1;
-warunek = 10^(-14);
+r = ones(size(D, 1), 1);
 
 while norm(res) >= warunek
     r = first * r + second;
@@ -255,7 +256,7 @@ first = -(D + L)^(-1);
 second = (D + L)^(-1) * b; 
 
 res = 1;
-k = 1;
+r = ones(size(D, 1), 1);
 
 while norm(res) >= warunek
     r = first * (U*r) + second;
