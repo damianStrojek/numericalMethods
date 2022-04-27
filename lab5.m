@@ -142,30 +142,35 @@ end
 
 % Laboratorium 5.1 Damian Strojek 184407
 
+
 M = 1 + mod(3, 4);
-K = [5, 9, 15, 39];
+K = [5, 15, 25, 33];
 
 [XX, YY] = meshgrid(linspace(0, 100, 101), linspace(0, 100, 101));
 for i = K
+    % Generacja toru ruchu łazika (x,y) i rozkład promieniowania
+    % jonizującego (f)
     [x, y, f, xp, yp] = lazik(i);
 
     subplot(2, 2, 1);
-    plot(xp, yp, '-o', 'linewidth', 1.25, 'markersize', 2);
+    plot(x, y, '-o', 'linewidth', 3, 'LineWidth', 1);
     title("Tor ruchu łazika dla K = ", num2str(i));
     ylabel("y [km]");
     xlabel("x [km]");
 
     subplot(2, 2, 2);
-    plot3(x, y, f, 'o', 'markersize', 5);
+    plot3(x, y, f, 'o', 'LineWidth', 1);
     title("Wartości próbek dla K = ", num2str(i));
     ylabel("y [km]");
     xlabel("x [km]");
     zlabel("f (x,y)");
 
+    % Interpolacja wielomianowa
     [p] = polyfit2d(x, y, f);
+    % XX to macierze zawierające siatkę równoodległych punktów
     [FF] = polyval2d(XX, YY, p);
     subplot(2, 2, 3);
-    surf(YY, XX, FF);
+    surf(XX, YY, FF);
     shading flat;
 
     title("Interpolacja wielomianowa dla K = ", num2str(i));
@@ -173,10 +178,11 @@ for i = K
     xlabel("x [km]");
     zlabel("f (x,y)");
     
+    % Interpolacja trygonometryczna
     [p]  = trygfit2d(x, y, f);
     [FF] = trygval2d(XX, YY, p);
     subplot(2, 2, 4);
-    surf(YY, XX, FF);
+    surf(XX, YY, FF);
     shading flat;
 
     title("Interpolacja trygonometryczna dla K = ", num2str(i));
@@ -188,10 +194,11 @@ for i = K
 end
 
 % Laboratorium 5.2 Damian Strojek 184407
-               
+
 div_polyval = [];
 div_trygval = [];
 
+% Optymalny rokzład punktów pomiarowych do stworzenia dokładnej mapy
 for i = 5:45
     [XX, YY] = meshgrid(linspace(0, 100, 101), linspace(0, 100, 101));
     [x, y, f, xp, yp] = lazik(i);
@@ -206,6 +213,7 @@ for i = 5:45
         FF_p_prev = FF_p;
         FF_t_prev = FF_t;
     else
+        % Wykreślenie dwóch wykresów zbieżności
         div_polyval = [div_polyval, max(max(abs(FF_p - FF_p_prev)))];
         div_trygval = [div_trygval, max(max(abs(FF_t - FF_t_prev)))];
         FF_p_prev = FF_p;
