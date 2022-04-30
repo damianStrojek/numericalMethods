@@ -37,11 +37,11 @@ int main() {
     std::cout << normResidual << "\n\n";
 
     // Task C
-    /*delete A;
+    delete A;
     a1 = 3; 
     A = new Matrix(N, a1, a2, a3);
     for (int i = 0; i < N; i++) b[i] = sin(i * 5.0);
- 
+    /*
     jacobiMethod(A, b, x, normResidual, iterations, duration);
     std::cout << "\nTask C:\nJacobi method:\n\tNumber of iterations: ";
     std::cout << iterations << "\n\tDuration in milliseconds: ";
