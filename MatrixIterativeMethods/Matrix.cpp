@@ -37,7 +37,9 @@ void Matrix::writeMatrix() {
 	for (int i = 0; i < this->size; i++) {
 		std::cout << i << " [ ";
 		for (int j = 0; j < this->size; j++)
-			std::cout << this->A[i][j] << " ";
+			// To look good for integers, didnt do it for floats
+			if (this->A[i][j] >= 0) std::cout << " " << this->A[i][j] << " ";
+			else std::cout << this->A[i][j] << " ";
 		std::cout << "]\n";
 	}
 };
