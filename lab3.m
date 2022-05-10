@@ -13,7 +13,6 @@ diary("log_184407_lab3")
 
 N = 10;
 density = 3; % parametr decydujący o gestosci polaczen miedzy stronami
-% tu powinien byc indeks 184407
 [Edges] = generate_network(N, density);
 %-----------------
 
