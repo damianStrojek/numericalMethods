@@ -1,274 +1,107 @@
-clc
-clear all
-close all
-diary("log_184407_lab3")
+% Damian Strojek 184407
+function plot_circ(X, Y, R)
+    theta = linspace(0, 2*pi);
+    x = R*cos(theta) + X;
+    y = R*sin(theta) + Y;
+    plot(x,y)
+end
 
-% odpowiednie fragmenty kodu można wykonać poprzez znazaczenie i wciśnięcie F9
-% komentowanie/ odkomentowywanie: ctrl+r / ctrl+t
+% ---------------------------------------------------- 
+% Zadanie 1
+% ----------------------------------------------------
 
+Edges = sparse([1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 5, 5, 6, 6, 7; ...
+                4, 6, 4, 5, 3, 6, 5, 7, 6, 5, 6, 4, 4, 7, 6]);
 
-%-----------------
-% Zadanie A
-%------------------
+N = 7;              % ilosc stron
+d = 0.85;           % parametr przyjety
 
-N = 10;
-density = 3; % parametr decydujący o gestosci polaczen miedzy stronami
-% tu powinien byc indeks 184407
-[Edges] = generate_network(N, density);
-%-----------------
-
-% Zadanie B
-%------------------
-% generacja macierzy I, A, B i wektora b
-% macierze A, B i I muszą być przechowywane w formacie sparse (rzadkim)
-d = 0.85; 
-B = sparse(Edges(2,:), Edges(1,:), 1, N, N);
-L = sparse(sum(B));
-A = sparse(diag(1./L)); 
 I = speye(N);
+B = sparse(Edges(2,:), Edges(1, :), 1, N, N); % macierz sasiedztwa
+
+L = zeros(1, N);    % same zera
+for i = 1:N
+    L(i) = sum(B(:,i));
+end
+A = sparse(diag(1./L));
+
 b = zeros(N, 1);
-b(:, 1) = (1-d)/N;
-
-save zadB_184407 A B I b
-
-%-----------------
-% Zadanie C
-%-----------------
-% rozwiazanie ukladu rownan
-
+b(:, 1) = (1 - d)/N;
 M = sparse(I - d * B * A);
-r = M \ b;
 
-save zadC_184407 r
+r = M \ b;  % uklad rownan
+bar(r);     % wykres
 
-%-----------------
-% Zadanie D
-%------------------
+% ---------------------------------------------------- 
+% Zadanie 2
+% ----------------------------------------------------
 
-clc
-clear all
-close all
+a = 10;             % bok kwadratu
+r_max = a/3;        % maksymalny promien
+n_max = 100;        % maksymalna ilosc pecherzykow
+x = [];y = [];r = [];t = [];
 
-N = [500, 1000, 3000, 6000, 12000];
-density = 10;
-d = 0.85;
+n = 0;                                % aktualna wartosc
+rand_count = 0;
+rand_counts = [];
+area = 0;
+areas = [];
 
-for i = 1:5
-    [Edges] = generate_network(N(i), density);
-    B = sparse(Edges(2,:), Edges(1,:), 1, N(i), N(i));
-    L = sparse(sum(B));
-    A = sparse(diag(1./L)); 
-    I = speye(N(i));
-    b = zeros(N(i), 1);
-    b(:, 1) = (1-d)/N(i);
-    M = sparse(I - d * B * A);
+while(n <= n_max)
+    does_fit = false;
+    while(does_fit == false)
+        rand_count = rand_count + 1;   
+        x_r = rand(1) * a;
+        y_r = rand(1) * a;
+        r_r = rand(1) * r_max;
+         if(x_r + r_r <= a && x_r - r_r > 0 && y_r + r_r <= a && y_r - r_r > 0)
+            does_fit = true;
+         end
+    end
 
-    tic
-    % obliczenia
-    r = M \ b;
-    czas_Gauss(i) = toc;
-end
-
-figure("Name", "Czas Gaussa");
-plot(N, czas_Gauss)
-title("Zadanie D - Czas rozwiązania metodą Gaussa");
-xlabel("Wielkość macierzy N");
-ylabel("Czas [s]");
-saveas(gcf, "zadD_184407.png");
-
-%------------------
-% Zadanie E
-%------------------
-
-clc
-clear all
-close all
-
-N = [500, 1000, 3000, 6000, 12000];
-density = 10;
-d = 0.85;
-warunek = 10^(-14);
-
-for i = 1:5
-    [Edges] = generate_network(N(i), density);
-    B = sparse(Edges(2,:), Edges(1,:), 1, N(i), N(i));
-    L = sparse(sum(B));
-    A = sparse(diag(1./L)); 
-    I = speye(N(i));
-    b = zeros(N(i), 1);
-    b(:, 1) = (1-d)/N(i);
-    M = sparse(I - d * B * A);
-    
-    % wzór z pdfa
-    r = ones(N(i), 1);
-    D = diag(diag(M));
-    U = triu(M, 1);
-    L = tril(M, -1);
-    first = (-D)^(-1) * (L + U);
-    second = D^(-1) * b;
-
-    iterations(i) = 1;
-    res = 1;
-    k = 1;
-    tic
-    while norm(res) >= warunek
-        if N(i) == 1000
-            normres(k) = norm(res);
-            k = k + 1;
+    does_cross = false;
+    for i = 1:n
+        x_dist = (x_r - x(i));
+        y_dist = (y_r - y(i));
+        dist = sqrt(x_dist * x_dist + y_dist * y_dist);
+        if(dist < r(i) + r_r && dist > abs(r(i) - r_r))
+            does_cross = true;
+        elseif(dist == r(i) + r_r)
+            does_cross = true;
         end
-        r = first * r + second;
-        res = M * r - b;
-        iterations(i) = iterations(i) + 1;
     end
-    czas_Jacobi(i) = toc;
-end
 
-figure("Name", "Czas Jacobi");
-plot(N, czas_Jacobi);
-title("Zadanie E - Czas rozwiązania metodą Jacobiego");
-xlabel("Wielkość macierzy N");
-ylabel("Czas [s]");
-saveas(gcf, "zadE_184407_1.png");
+    if(does_cross == false)
+        n = n + 1;
+        x(n) = x_r;
+        y(n) = y_r;
+        r(n) = r_r;
+        area = area + pi*r_r*r_r;
+        areas(n) = area;
+         
+        % rand_counts(n) = rand_count / n; - takie podejscie nie chcialo
+        % mi zadzialac, wiec musialem znalezc alternatywne rozwiazanie
+        rand_counts(n) = rand_count;
+        rand_count = 0;
+        
 
-figure("Name", "Liczba iteracji Jacobi");
-plot(N, iterations);
-title("Zadanie E - Liczba iteracji dla metody Jacobiego");
-xlabel("Wielkość macierzy N");
-ylabel("Liczba iteracji");
-saveas(gcf, "zadE_184407_2.png");
-
-figure("Name", "Norma z residuum Jacobi");
-semilogy(normres);
-title("Zadanie E - Wykres normy residuum Jacobi");
-xlabel("Ilość iteracji");
-ylabel("Norma residuum")
-saveas(gcf, "zadE_184407_3.png");
-
-%------------------
-% Zadanie F
-%------------------
-
-clc
-clear all
-close all
-
-N = [500, 1000, 3000, 6000, 12000];
-density = 10;
-d = 0.85;
-warunek = 10^(-14);
-
-for i = 1:5
-    [Edges] = generate_network(N(i), density);
-    B = sparse(Edges(2,:), Edges(1,:), 1, N(i), N(i));
-    L = sparse(sum(B));
-    A = sparse(diag(1./L)); 
-    I = speye(N(i));
-    b = zeros(N(i), 1);
-    b(:, 1) = (1-d)/N(i);
-    M = sparse(I - d * B * A);
-    
-    % wzór z pdfa
-    r = ones(N(i), 1);
-    D = diag(diag(M));
-    U = triu(M, 1);
-    L = tril(M, -1);
-    first = -(D + L)^(-1);
-    second = (D + L)^(-1) * b;
-
-    iterationsG(i) = 1;
-    res = 1;
-    k = 1;
-    tic
-    while norm(res) >= warunek
-        if N(i) == 1000
-            normres(k) = norm(res);
-            k = k + 1;
-        end
-        r = first * (U*r) + second;
-        res = M * r - b;
-        iterationsG(i) = iterationsG(i) + 1;
-    end
-    czas_GaussSeidl(i) = toc;
-end
-
-figure("Name", "Czas Gauss-Seidl");
-plot(N, czas_GaussSeidl);
-title("Zadanie F - Czas rozwiązania metodą Gaussa-Seidla");
-xlabel("Wielkość macierzy N");
-ylabel("Czas [s]");
-saveas(gcf, "zadF_184407_1.png");
-
-figure("Name", "Liczba iteracji Gauss-Seidl");
-plot(N, iterationsG);
-title("Zadanie F - Liczba iteracji dla metody Gaussa-Seidla");
-xlabel("Wielkość macierzy N");
-ylabel("Liczba iteracji");
-saveas(gcf, "zadF_184407_2.png");
-
-figure("Name", "Norma z residuum Gauss-Siedl");
-semilogy(normres);
-title("Zadanie F - Wykres normy residuum Gauss-Siedl");
-xlabel("Ilość iteracji");
-ylabel("Norma residuum");
-saveas(gcf, "zadF_184407_3.png");
-
-%------------------
-% Zadanie G
-%------------------
-
-clc
-clear all
-close all
-load("Dane_Filtr_Dielektryczny_lab3_MN.mat");
-r = M \ b;
-
-save zadG_184407_B r
-
-D = diag(diag(M));
-U = triu(M, 1);
-L = tril(M, -1);
-iterationsG1(1) = 0;
-iterationsG1(2) = 2;
-warunek = 10^(-14);
-
-first = (-D)^(-1) * (L + U);
-second = D^(-1) * b;
-
-res = 1;
-r = ones(size(D, 1), 1);
-
-while norm(res) >= warunek
-    r = first * r + second;
-    res = M * r - b;
-    iterationsG1(1) = iterationsG1(1) + 1;
-    if isnan(norm(res))
-        break
+        fprintf(1, ' %s%5d%s%.3g\r ', 'n =',  n, ' S = ', area);
+        pause(0.01);
+        axis equal;               % wyrownanie
+        plot_circ(x_r, y_r, r_r);
+        hold on;
     end
 end
 
-if isnan(norm(res)) == false
-    save zadG_184407_J r
-end
-
-%-----------------
-
-first = -(D + L)^(-1);
-second = (D + L)^(-1) * b; 
-
-res = 1;
-r = ones(size(D, 1), 1);
-
-while norm(res) >= warunek
-    r = first * (U*r) + second;
-    res = M * r - b;
-    iterationsG1(2) = iterationsG1(2) + 1;
-    if isnan(norm(res))
-        break
-    end
-end
-
-if isnan(norm(res)) == false
-    save zadG_184407_GS r
-end
-
-
+figure("Name", "Powierzchnia Całkowita");
+semilogx(1:n, areas);
+xlabel("Liczba pęcherzyków");
+ylabel("Powierzchnia calkowita");
+title("Wykres powierzchni calkowitej w zaleznosci od ilosci pecherzykow");
+saveas(gcf, "graf1.png");
+figure("Name", "Średnia liczba losowań");
+loglog(cumsum(rand_counts)./linspace(1, n, n));
+xlabel("Liczba pęcherzyków");
+ylabel("Średnia liczba losowań");
+title("Wykres średniej liczby losowań wielkości pęcherzyków");
+saveas(gcf, "graf2.png");
